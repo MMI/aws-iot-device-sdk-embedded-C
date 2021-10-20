@@ -169,10 +169,12 @@ static void topicNameFromThingAndAction(char *pTopic, const char *pThingName, Sh
 }
 
 static bool isValidShadowVersionUpdate(const char *pTopicName) {
-	if(strstr(pTopicName, myThingName) != NULL &&
-	   ((strstr(pTopicName, "get/accepted") != NULL) ||
-		(strstr(pTopicName, "delta") != NULL))) {
-		return true;
+	if(pTopicName && strlen(myThingName)>0) {
+		if(strstr(pTopicName, myThingName) != NULL &&
+		((strstr(pTopicName, "get/accepted") != NULL) ||
+			(strstr(pTopicName, "delta") != NULL))) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -212,7 +214,7 @@ static void AckStatusCallback(AWS_IoT_Client *pClient, char *topicName, uint16_t
 
 	if(extractClientToken(shadowRxBuf, SHADOW_MAX_SIZE_OF_RX_BUFFER, temporaryClientToken, MAX_SIZE_CLIENT_TOKEN_CLIENT_SEQUENCE)) {
 		for(i = 0; i < MAX_ACKS_TO_COMEIN_AT_ANY_GIVEN_TIME; i++) {
-			if(!AckWaitList[i].isFree) {
+			if(topicName && !AckWaitList[i].isFree) {
 				if(strcmp(AckWaitList[i].clientTokenID, temporaryClientToken) == 0) {
 					Shadow_Ack_Status_t status = SHADOW_ACK_REJECTED;
 					if(strstr(topicName, "accepted") != NULL) {
